@@ -13,5 +13,10 @@
 
 # from peewee import SqliteDatabase
 
-database_disks = '/home/pp/dev/sw/PycharmProjects/all_drives/all_disks_2024.db'
+# database_disks = '/home/pp/dev/sw/PycharmProjects/all_drives/all_disks_2024.sqlite3'
+# database_disks = '/home/pp/dev/sw/PycharmProjects/all_drives/all_disks_2024_new.sqlite3'
+
+# TODO
+database_disks = '/home/pp/dev/sw/PycharmProjects/all_drives/all_disks_2024_new_dbg.sqlite3'
+
 

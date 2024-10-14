@@ -1,6 +1,7 @@
 issues/
 tmp_modif.txt
 all_disks_2024.db
+\.idea/
 .idea/
 *.pyc
 *.pyi
