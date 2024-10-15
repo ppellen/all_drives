@@ -50,9 +50,9 @@ class Folder(BaseModel):
     # parent object and the back-reference is named children.
     mat_path = TextField(null=True)  # materialized path
     folder_name= TextField(null=True)
-    folder_last_access = DateTimeField(null=True)  # stat.st_atime
+    # folder_last_access = DateTimeField(null=True)  # stat.st_atime
     folder_last_modif  = DateTimeField(null=True)  # stat.st_mtime
-    folder_meta_change = DateTimeField(null=True)  # stat.st_ctime
+    # folder_meta_change = DateTimeField(null=True)  # stat.st_ctime
     max_files_last_modif  = DateTimeField(null=True)
     id_file_max_last_modif = DeferredForeignKey('file', backref='maxlastmodif', null=True)
     min_files_last_modif  = DateTimeField(null=True)
@@ -68,6 +68,13 @@ class Folder(BaseModel):
             raise(e)
         return this_folder
 
+    # def __str__(self):
+    #     return "Folder {id} (parent: {parent_folder}) name: {folder_name}".format(id=self.id, parent_folder=self.parent_folder, folder_name=self.folder_name )
+
+    def __repr__(self):
+        return "Folder {id} (parent: {parent_folder}) name: {folder_name}".format(id=self.id, parent_folder=self.parent_folder, folder_name=self.folder_name )
+
+
 class Extension(BaseModel):
     id = IntegerField(primary_key=True)
     extension = TextField(null=True)
@@ -82,10 +89,13 @@ class File(BaseModel):
     extension = ForeignKeyField(Extension, backref='files')
     file_name = TextField(null=True)
     file_size = IntegerField(null=False)
-    file_last_access = DateTimeField(null=True)  # stat.st_atime
+    # file_last_access = DateTimeField(null=True)  # stat.st_atime
     file_last_modif  = DateTimeField(null=True)  # stat.st_mtime
-    file_meta_change = DateTimeField(null=True)  # stat.st_ctime
+    # file_meta_change = DateTimeField(null=True)  # stat.st_ctime
     hexdigest = TextField(null=True)
+
+    def __repr__(self):
+        return "File {id} (in folder: {folder_id}) name: {file_name}".format(id=self.id, folder_id=self.folder_id, file_name=self.file_name )
     # class Meta:
     #     table_name = 'files'
 

@@ -13,19 +13,32 @@ from datetime import datetime
 MINDATE = datetime(1970,  1,  1,  0,  0,  0)
 MAXDATE = datetime(9999, 12, 31, 23, 59, 59)
 
+indent_level = 0
+
+def indents():
+    global indent_level
+    return indent_level*"  "
 
 def traverse( this_folder_id) :
+    global indent_level
+    #
+    this_folder_inst = (Folder.select().where(Folder.id == this_folder_id)).execute()[0]
+    print(indents(),"entering", repr(this_folder_inst))
+
     # query1 = Folder.select(fn.MIN(Folder.folder_last_modif),fn.MAX(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)  #
     query1 = Folder.select().where(Folder.parent_folder == this_folder_id)  #
-    print(len(query1), ' folders')
+    print(indents(), len(query1), ' folders')
+
+    indent_level += 1
     for row_folder in query1:
-        print(row_folder.id)
         traverse(row_folder.id)
 
     query2 = File.select().where(File.folder_id == this_folder_id)  #
-    print(len(query2), ' files')
+    print(indents(), len(query2), ' files')
     for row_file in query2:
-        print(row_file.id)
+        print(indents(), repr(row_file))
+
+    indent_level -= 1
 
 def traverse2( this_folder_id) :
     querymin = Folder.select(Folder.id, fn.MIN(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)
@@ -130,9 +143,19 @@ def traverse4( this_folder_id) :
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    root_id = 11  #
+    root_id = 2  #
 
-    traverse4(root_id)
+    # root_folder_inst = (Folder.select().where(Folder.id == root_id)).execute()
+    # for inst in root_folder_inst:
+    #     print(str(inst))
+
+    root_folder_inst = (Folder.select().where(Folder.id == root_id)).execute()[0]
+    print(str(root_folder_inst))
+
+
+    # root_folder_scalar = (Folder.select().where(Folder.id == root_id)).scalar()  # -> the id
+
+    traverse(root_id)
 
 
     exit()

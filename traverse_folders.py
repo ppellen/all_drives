@@ -80,9 +80,9 @@ def process_file( current_folder, this_file, current_folder_inst ):
                               file_name=this_file,
                               file_mat_path= my_folder_mat_path,
                               file_size=file_data.statinfo.st_size,
-                              file_last_access =  datetime_fromtimestamp(file_data.statinfo.st_atime),
+                              # file_last_access =  datetime_fromtimestamp(file_data.statinfo.st_atime),
                               file_last_modif =   datetime_fromtimestamp(file_data.statinfo.st_mtime),
-                              file_meta_change =  datetime_fromtimestamp(file_data.statinfo.st_ctime),
+                              # file_meta_change =  datetime_fromtimestamp(file_data.statinfo.st_ctime),
                               hexdigest = file_data.digest.hexdigest()
         )
         file_inst.save()
@@ -131,9 +131,9 @@ def process_folder(parent_folder_inst, this_folder_name ):
         parent_folder = parent_folder_inst.id,
         mat_path = mat_path,
         folder_name= this_folder_name,
-        folder_last_access = datetime_fromtimestamp(stat_info.st_atime),
+        # folder_last_access = datetime_fromtimestamp(stat_info.st_atime),
         folder_last_modif  = datetime_fromtimestamp(stat_info.st_mtime),
-        folder_meta_change = datetime_fromtimestamp(stat_info.st_ctime),
+        # folder_meta_change = datetime_fromtimestamp(stat_info.st_ctime),
     )
     current_folder_inst.save()
 
@@ -194,9 +194,9 @@ if __name__ == '__main__':
         parent_folder = None, #
         mat_path = str(disk_inst.id),  # materialized path - starts with disk id.
         folder_name= pseudo_parent_name,
-        folder_last_access = datetime_fromtimestamp(stat_info_root.st_atime),
+        # folder_last_access = datetime_fromtimestamp(stat_info_root.st_atime),
         folder_last_modif  = datetime_fromtimestamp(stat_info_root.st_mtime),
-        folder_meta_change = datetime_fromtimestamp(stat_info_root.st_ctime),
+        # folder_meta_change = datetime_fromtimestamp(stat_info_root.st_ctime),
     )
     root_folder_inst.save()
     chdir(pseudo_parent_name)
