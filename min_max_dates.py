@@ -14,31 +14,39 @@ MINDATE = datetime(1970,  1,  1,  0,  0,  0)
 MAXDATE = datetime(9999, 12, 31, 23, 59, 59)
 
 indent_level = 0
-
+ONE_INDENT = "\t"
 def indents():
     global indent_level
-    return indent_level*"  "
+    return indent_level*ONE_INDENT
+def prindent(*args):
+    print(indents(), " ".join(str(x) for x in args))
+def inc_indent():
+    global indent_level
+    indent_level += 1
+def dec_indent():
+    global indent_level
+    indent_level -= 1
 
 def traverse( this_folder_id) :
-    global indent_level
-    #
     this_folder_inst = (Folder.select().where(Folder.id == this_folder_id)).execute()[0]
-    print(indents(),"entering", repr(this_folder_inst))
+    prindent("Entering", repr(this_folder_inst))
 
     # query1 = Folder.select(fn.MIN(Folder.folder_last_modif),fn.MAX(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)  #
     query1 = Folder.select().where(Folder.parent_folder == this_folder_id)  #
-    print(indents(), len(query1), ' folders')
+    prindent( "Folder %s has" % str(this_folder_inst.id), len(query1), 'sub-folders')
 
-    indent_level += 1
+    inc_indent()  # ------------------------------------------------------
     for row_folder in query1:
         traverse(row_folder.id)
+    dec_indent()  # ------------------------------------------------------
 
     query2 = File.select().where(File.folder_id == this_folder_id)  #
-    print(indents(), len(query2), ' files')
+    prindent( "Folder %s contains" % str(this_folder_inst.id), len(query2), ' files')
+    inc_indent()  # ------------------------------------------------------
     for row_file in query2:
-        print(indents(), repr(row_file))
+        prindent( repr(row_file))
+    dec_indent()  # ------------------------------------------------------
 
-    indent_level -= 1
 
 def traverse2( this_folder_id) :
     querymin = Folder.select(Folder.id, fn.MIN(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)
