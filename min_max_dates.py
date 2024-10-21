@@ -47,7 +47,6 @@ def traverse( this_folder_id) :
         prindent( repr(row_file))
     dec_indent()  # ------------------------------------------------------
 
-
 def traverse2( this_folder_id) :
     querymin = Folder.select(Folder.id, fn.MIN(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)
     querymax = Folder.select(Folder.id, fn.MAX(Folder.folder_last_modif)).where(Folder.parent_folder == this_folder_id)
@@ -68,7 +67,6 @@ def traverse2( this_folder_id) :
     print(len(query2), ' files')
     for row_file in query2:
         print(row_file.id)
-
 
 def traverse3( this_folder_id) :
 
@@ -107,44 +105,91 @@ def traverse3( this_folder_id) :
 
     Folder.update( max_files_last_modif = tmax, id_file_max_last_modif = idmax, min_files_last_modif = tmin,  id_file_min_last_modif = idmin).where(Folder.parent_folder==this_folder_id).execute()
 
-
 def traverse4( this_folder_id) :
-
-    # print('Entering in folder/id :', this_folder_id)
-    query1 = Folder.select(Folder.id, Folder.folder_last_modif).where(Folder.parent_folder == this_folder_id)
-    same_parent = query1.tuples()
-    if len(same_parent) > 0:
-        result = [ s for  s in same_parent]
-        result_sorted = sorted(result, key=lambda x: x[1])
-        idmin, tmin = result[0]
-        idmax, tmax = result[-1]
-        # print('min, max ', idmin, tmin,idmax, tmax  )
-        # print(len(same_parent), ' folders have the parent:', this_folder_id)
-        for child_folder in result_sorted:
-            # print('down to folder/id :', child_folder[0])
-            traverse4(child_folder[0])
-            # print('back to folder/id :', this_folder_id)
-    else:
-        idmin = tmin = idmax = tmax = None
+    this_folder_inst = (Folder.select().where(Folder.id == this_folder_id)).execute()[0]
+    prindent("Entering", repr(this_folder_inst))
 
     # print('processing files in folder/id :', this_folder_id)
     query2 = File.select(File.id, File.file_last_modif).where(File.folder_id == this_folder_id)  #
-    # print(len(query2), ' files in ')
+    prindent( "Folder %s contains" % str(this_folder_inst.id), len(query2), ' files')
+
+    files_idmin = files_tmin = files_idmax = files_tmax = None
     if len(query2) > 0:
-        for row_file in query2:
-            pass
-            # print(row_file.id)
-        same_parent = query2.tuples()
-        if len(same_parent) > 0:
-            result = [ s for  s in same_parent]
-            result_sorted = sorted(result, key=lambda x: x[1])
-            idmin, tmin = result[0]
-            idmax, tmax = result[-1]
+        # for row_file in query2:
+        #     pass
+        #     # print(row_file.id)
+        files_in_this_folder = query2.tuples()
+        if len(files_in_this_folder) > 0:
+            result = [ s for  s in files_in_this_folder ]
+            files_idmin, files_tmin = min(result, key=lambda x: x[1])
+            files_idmax, files_tmax = max(result, key=lambda x: x[1])
+
             # print(idmin, tmin,idmax, tmax  )
         else:
-            idmin = tmin = idmax = tmax = None
+            files_idmin = files_tmin = files_idmax = files_tmax = None
 
-    Folder.update( max_files_last_modif = tmax, id_file_max_last_modif = idmax, min_files_last_modif = tmin,  id_file_min_last_modif = idmin).where(Folder.parent_folder==this_folder_id).execute()
+    prindent('Files : idmin: {idmin} - tmin: {tmin} -- idmax: {idmax} - tmax: {tmax}'.format( idmin= files_idmin, tmin=files_tmin, idmax=files_idmax, tmax=files_tmax ))
+
+    query1 = Folder.select().where(Folder.parent_folder == this_folder_id)  #
+    prindent( "Folder %s has" % str(this_folder_inst.id), len(query1), 'sub-folders')
+
+    inc_indent()  # ------------------------------------------------------
+    for row_folder in query1:
+        traverse4(row_folder.id)
+    dec_indent()  # ------------------------------------------------------
+
+    folders_idmin = folders_tmin = folders_idmax = folders_tmax = None
+    query1 = Folder.select(
+        Folder.max_files_last_modif,
+        Folder.id_file_max_last_modif  ,
+        Folder.min_files_last_modif    ,
+        Folder.id_file_min_last_modif
+    ).where(Folder.parent_folder == this_folder_id)
+
+    folders_in_this_folder = query1.tuples()
+    if len(folders_in_this_folder ) > 0:
+
+        # if this_folder_id == 2:
+        #     pass
+
+        result_min = [ (s[3], s[2]) for  s in folders_in_this_folder if (s[3] is not None and s[2] is not None)]
+        result_max = [ (s[1], s[0]) for  s in folders_in_this_folder if (s[1] is not None and s[0] is not None)]
+
+        try:
+            mins = min(result_min, key=lambda x: x[1])
+            folders_idmin, folders_tmin = mins[0], mins[1]
+        except:
+            pass
+
+        try:
+            maxs = max(result_max, key=lambda x: x[1] )
+            folders_idmax, folders_tmax = maxs[0], maxs[1]
+        except:
+            pass
+    else:
+        folders_idmin = folders_tmin = folders_idmax = folders_tmax = None
+
+    if files_tmin is None:
+        if folders_tmin is None:
+            mins = (None, None)
+        else:
+            mins = (folders_idmin, folders_tmin)
+    elif folders_tmin is None:
+        mins = ( files_idmin, files_tmin)
+    else:
+        mins = min((( files_idmin, files_tmin),(folders_idmin, folders_tmin)), key=lambda x: x[1])
+
+    if files_tmax is None:
+        if folders_tmax is None:
+            maxs = (None, None)
+        else:
+            maxs = (folders_idmax, folders_tmax)
+    elif folders_tmax is None:
+        maxs = (files_idmax, files_tmax)
+    else:
+        maxs = max((( files_idmax, files_tmax),(folders_idmax, folders_tmax)), key=lambda x: x[1])
+
+    Folder.update( max_files_last_modif = maxs[1], id_file_max_last_modif = maxs[0], min_files_last_modif =  mins[1],  id_file_min_last_modif = mins[0]).where(Folder.id == this_folder_id).execute()
 
 
 
@@ -163,7 +208,7 @@ if __name__ == '__main__':
 
     # root_folder_scalar = (Folder.select().where(Folder.id == root_id)).scalar()  # -> the id
 
-    traverse(root_id)
+    traverse4(root_id)
 
 
     exit()
